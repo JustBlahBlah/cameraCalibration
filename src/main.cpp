@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
         	return -1;
     	}
 	
-	cv::Mat frame;
+	cv::Mat frame, gray;
 
 	while(true){
 		cap >> frame;
@@ -57,6 +57,19 @@ int main(int argc, char** argv) {
             		break;
         	}
         		
+		cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+
+		std::vector<cv::Point2f> corners;
+
+        	bool patternfound = cv::findChessboardCorners(gray, patternsize, corners, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_NORMALIZE_IMAGE | cv::CALIB_CB_FAST_CHECK);
+
+        	if(patternfound) {
+
+			cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+			cv::drawChessboardCorners(frame, patternsize, cv::Mat(corners), patternfound);
+        	}
+
 		cv::imshow("live", frame);
 
 		if(cv::waitKey(10) == 27) break;
