@@ -8,7 +8,8 @@ static void printHelp() {
               << "  -c, --camera <id>        ID of the camera to use (Default: 0)\n"
               << "  -b, --board <w> <h>      Board size: width and height (e.g., -b 9 6)\n"
               << "  -s, --square <val>       Physical square size in meters/mm (e.g., -s 0.025)\n"
-              << "  -o, --out <fileNameWithExtension>	File in which settings are saved\n"
+              << "  -o, --out <fileNameWithExtension>	Save settings in specified file\n"
+	      << "  -l, --load <fileNameWithExtension>  Load settings from file in which they are saved\n"
 	      << "  -h, --help               Show this help message\n" 
               << std::endl;
 }
@@ -21,6 +22,7 @@ int main(int argc, char** argv) {
 	float squareSize = 0.024;
 	std::size_t cameraIndex = 0;
 	std::string outFileName = "calibratedParametrs.yml";
+	std::string loadFileName = outFileName;
 
  	for (int i = 1; i < argc; i++) {
     		std::string a = argv[i];
@@ -37,6 +39,9 @@ int main(int argc, char** argv) {
     		}
 		else if ((a == "--out" || a == "-o") && i + 1 < argc) {
         		outFileName = argv[++i];
+    		}
+		else if ((a == "--load" || a == "-l") && i + 1 < argc) {
+        		loadFileName = argv[++i];
     		}
 		else if((a == "--help" || a == "-h")) {
 			printHelp();
@@ -137,6 +142,17 @@ int main(int argc, char** argv) {
 				fs << "distortion_coefficients" << distCoeffs;
 				std::cout << "Settings are saved to " << outFileName << std::endl;
 			}
+		} else if(key == 'l'){
+			cv::FileStorage fs(loadFileName, cv::FileStorage::READ);
+			if(!fs.isOpened()){
+				std::cout << "Could not read " << loadFileName << std::endl;
+			} else {
+				fs["camera_matrix"] >> cameraMatrix;
+				fs["distortion_coefficients"] >> distCoeffs;
+				calibrated = true;
+				std::cout << "loaded calibration parametrs from " << loadFileName << std::endl;
+			}
+
 		} 
 		else if(key == 'q') break;
 
