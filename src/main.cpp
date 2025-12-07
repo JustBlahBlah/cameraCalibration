@@ -8,7 +8,8 @@ static void printHelp() {
               << "  -c, --camera <id>        ID of the camera to use (Default: 0)\n"
               << "  -b, --board <w> <h>      Board size: width and height (e.g., -b 9 6)\n"
               << "  -s, --square <val>       Physical square size in meters/mm (e.g., -s 0.025)\n"
-              << "  -h, --help               Show this help message\n" 
+              << "  -o, --out <fileNameWithExtension>	File in which settings are saved\n"
+	      << "  -h, --help               Show this help message\n" 
               << std::endl;
 }
 
@@ -19,6 +20,7 @@ int main(int argc, char** argv) {
 	cv::Size patternsize(9, 6);
 	float squareSize = 0.024;
 	std::size_t cameraIndex = 0;
+	std::string outFileName = "calibratedParametrs.yml";
 
  	for (int i = 1; i < argc; i++) {
     		std::string a = argv[i];
@@ -32,7 +34,10 @@ int main(int argc, char** argv) {
     		} 
     		else if ((a == "--square" || a == "-s") && i + 1 < argc) {
         		squareSize = std::stof(argv[++i]);
-    		} 
+    		}
+		else if ((a == "--out" || a == "-o") && i + 1 < argc) {
+        		outFileName = argv[++i];
+    		}
 		else if((a == "--help" || a == "-h")) {
 			printHelp();
 			return 0;
@@ -123,7 +128,17 @@ int main(int argc, char** argv) {
 				std::cout << "Distortion:\n" << distCoeffs << std::endl;
                 		calibrated = true;
             		}
-        	} else if(key == 'q') break;
+        	} else if(key == 's'){
+			if(!calibrated) {
+				std::cout << "Not calibrated yet, there is nothing to save";
+			} else {
+				cv::FileStorage fs(outFileName, cv::FileStorage::WRITE);
+				fs << "camera_matrix" << cameraMatrix;
+				fs << "distortion_coefficients" << distCoeffs;
+				std::cout << "Settings are saved to " << outFileName << std::endl;
+			}
+		} 
+		else if(key == 'q') break;
 
 		cv::imshow("live", display);
 
